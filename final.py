@@ -221,7 +221,7 @@ def ConvertInstruction(InstructionType,List):
                     MainLines = MainLines + Register[DataRegister] 
                     MainLines = MainLines + Register[SourceRegister1] 
                     MainLines = MainLines + InstructionDict[FirstCommand]['funct3'] 
-                    MainLines = MainLines + Immediate[8:]        
+                    MainLines = MainLines + Immediate[7:]        
                     MainLines = MainLines + InstructionDict[FirstCommand]['opcode'] + '\n'
                     Final.append(MainLines)
                 
