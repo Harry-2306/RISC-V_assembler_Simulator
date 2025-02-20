@@ -562,6 +562,7 @@ def ovsho(l1):              ## error case 11: overshooting the program bounds by
 
 
 BTypePos = []
+MainLines = []
 with open("Ex_test_6.txt","r") as f:
     l1=f.readlines()
     l2=[] #
