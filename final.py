@@ -1,7 +1,8 @@
 import sys
 import re
  
-Filename = "Ex_test_6.txt"
+input_path = sys.argv[1]
+output_path = sys.argv[2]
 #First defining all the registers with their ABI names and Alterate Name
 Register = { 
     "x0": "00000", "zero": "00000", "r0": "00000",
@@ -97,7 +98,7 @@ def get_instructions(filename):
                 instructions.append(tokens)
     return instructions
 
-l1 = get_instructions(Filename)
+l1 = get_instructions(input_path)
 Final = []
 BType = []
 BTypePos  = []
@@ -304,7 +305,7 @@ MainInstructions = {
 NumberOfLines = 0
 bool = False
 Absolute = False
-with open('Ex_test_6.txt') as file: 
+with open(input_path) as file: 
     for line in file: 
         if line == "\n" or line == "addi x0, x0, 0": 
             continue
@@ -563,7 +564,7 @@ def ovsho(l1):              ## error case 11: overshooting the program bounds by
 
 BTypePos = []
 MainLines = []
-with open("Ex_test_6.txt","r") as f:
+with open(input_path,"r") as f:
     l1=f.readlines()
     l2=[] #
     l3=[]
@@ -627,5 +628,5 @@ for i in range(len(Final) + len(MainList)):
         FinalString = FinalString + Final[k]
         k = k + 1
 
-with open('output.txt','w') as file: 
+with open(output_path,'w') as file: 
     file.write(FinalString)
