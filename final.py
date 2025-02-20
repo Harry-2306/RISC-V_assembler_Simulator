@@ -617,7 +617,7 @@ with open(input_path,"r") as f:
 
 
 #writing to output file
-if "00000000000000000000000001100011\n"==MainList[-1]: 
+if "00000000000000000000000001100011\n"!=MainList[-1]: 
  Error("Missing Virtual Halt") 
 k = 0
 j = 0
