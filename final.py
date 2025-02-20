@@ -571,7 +571,7 @@ with open("Ex_test_6.txt","r") as f:
         s1=removespaces(l1[i])
         l3.append(l1[i][:len(s1)])
         l2.append(l1[i][:len(s1)-1].split(','))
-        l1[i]=s1[:len(s1)-1].split(",")
+        l1[i]=s1[:len(s1)].split(",")
 
 
     i = -1
@@ -605,7 +605,7 @@ with open("Ex_test_6.txt","r") as f:
                     imm4=((twcoex12(int(j[2]))))
 
                 
-                bf=imm4[-12]+imm4[-10:-4:1]+rs2+rs1+funct3+(imm4[-4:-1:1]+imm4[-1]+imm4[-11])+opcode+'\n'
+                bf=imm4[-12]+imm4[-10:-4:1]+rs2+rs1+funct3+"" + (imm4[-4]+imm4[-3]+imm4[-2]+imm4[-1]+"" +imm4[-11])+"" +opcode+'\n'
                 lff.append(bf)
         MainList = lff
     else:
