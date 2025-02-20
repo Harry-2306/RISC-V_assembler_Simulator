@@ -85,11 +85,9 @@ def get_instructions(filename):
             if not line or line.startswith("#"):
                 continue
 
-            # Skip a specific line if needed (like "addi x0, x0, 0")
             if line == "addi x0, x0, 0":
                 continue
 
-            # Insert a space after commas so that registers and immediates are tokenized separately
             line = line.replace(",", ", ")
             tokens = line.split()
 
@@ -230,10 +228,9 @@ def ConvertInstruction(InstructionType,List):
                     Error(f"Error in Processing")
     
     elif InstructionType == "JTypeInstructions":
-        global l1  # Ensure l1 is available globally
+        global l1  
 
         MainLines = ""
-        # Verify exactly three tokens: mnemonic, rd, immediate/label
         if len(List) != 3:
             raise ValueError(f"Invalid syntax for J-type instruction: {' '.join(List)}")
         
@@ -241,21 +238,19 @@ def ConvertInstruction(InstructionType,List):
         rd = List[1]
         imm_str = List[2]
         
-        # Check that the destination register ends with a comma
+
         if not rd.endswith(','):
             Error(f"Syntax error: Missing ',' after destination register in '{mnemonic}'")
         rd = rd.strip(',')
         
         if rd not in Register:
             Error(f"Invalid register usage in '{mnemonic}'")
-        
-        # Determine the offset: if imm_str is numeric, convert; otherwise, resolve as label
+
         try:
             offset = int(imm_str)
         except ValueError:
             found = False
             for instr in l1:
-                # Look for a label; assumes labels are given as "label:" in the first token
                 if instr[0].endswith(':'):
                     label = instr[0].split(':')[0]
                     if label == imm_str:
@@ -266,23 +261,17 @@ def ConvertInstruction(InstructionType,List):
             if not found:
                 Error(f"Label '{imm_str}' not found in instruction list.")
         
-        # Convert the offset into a 21-bit two's-complement binary string.
-        # Make sure you have a helper function twcoex20 defined.
+
         imm21 = twcoex20(offset)  # e.g., "0xxxxxxxxxxxxxxxxxxxxx"
         
-        # Reassemble the immediate bits per RISC‑V JAL encoding:
-        #   - Bit 20 (sign)      : imm21[0]
-        #   - Bits 10:1          : imm21[10:20]
-        #   - Bit 11             : imm21[9]
-        #   - Bits 19:12         : imm21[1:9]
+
         imm_bit20 = imm21[0]
         imm_10_1  = imm21[10:20]
         imm_bit11 = imm21[9]
         imm_19_12 = imm21[1:9]
         imm_encoded = imm_bit20 + imm_10_1 + imm_bit11 + imm_19_12
         
-        # Form the final binary instruction:
-        # [immediate (20 bits)] + [rd (5 bits)] + [opcode (7 bits)]
+
         MainLines = imm_encoded + Register[rd] + JTypeInstructions[mnemonic]["opcode"] + "\n"
         Final.append(MainLines)
 
