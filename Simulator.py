@@ -91,14 +91,41 @@ BTypeInstructions = {
 
 PC = 0  
 def Test(Opcode, funct3):
+    for Values in RTypeInstructions.items():
+        if Values[1]["opcode"] == Opcode and Values[1]["funct3"] == funct3:
+            return "RTypeInstructions"
+        
+    for Values in JTypeInstructions.items():
+        if Values[1]["opcode"] == Opcode:
+            return "JTypeInstructions"
+        
+    for Values in BTypeInstructions.items():
+        if Values[1]["opcode"] == Opcode and Values[1]["funct3"] == funct3:
+            return "BTypeInstructions"
+        
+    for Values in ITypeInstructions.items():
+        if Values[1]["opcode"] == Opcode and Values[1]["funct3"] == funct3:
+            return "ITypeInstructions"
+        
+    for Values in STypeInstructions.items():
+        if Values[1]["opcode"] == Opcode and Values[1]["funct3"] == funct3:
+            return "STypeInstructions"
+
+    return "Error"
 
 
 
 def Binary(BinaryString):
-
+    RegisterNumber = 0
+    for bit in BinaryString:
+        RegisterNumber = RegisterNumber* 2 + int(bit) 
+    return f"x{RegisterNumber}"
 
 
 def UnSigned(value):
+    if value < 0:
+        value = value +  4294967296 
+    return value % 4294967296  
 
 
 
@@ -259,6 +286,9 @@ def Process(element, Instruction, PC):
 
 
 def Error(Message):
+    with open(output_path, "w") as f:  
+        f.write(Message)  
+    sys.exit() 
 
 
 OriginalInstructionsList = []
@@ -266,16 +296,43 @@ with open(input_path, "r") as file:
     for line in file:
         OriginalInstructionsList.append(line.strip())  
 
-def Binary(BinaryString):
-    RegisterNumber = 0
-    for bit in BinaryString:
-        RegisterNumber = RegisterNumber* 2 + int(bit) 
-    return f"x{RegisterNumber}"
 
 
-def UnSigned(value):
-    if value < 0:
-        value = value +  4294967296 
-    return value % 4294967296  
-
+with open(output_path, "w") as file:
+    while OriginalInstructionsList[PC//4] != "00000000000000000000000001100011":
+        if (PC%4 != 0):
+            Error("PC is not a multiple")
+        element = OriginalInstructionsList[PC//4]
+        Opcode = element[-7:]  
+        funct3 = element[-15:-12]  
+        ObtainedInstruction = Test(Opcode, funct3)
+        
+        if ObtainedInstruction == "Error":
+            Error(f"Unknown instruction at PC = {PC + 4}\n")
+            break
+        
+        PC = Process(element, ObtainedInstruction, PC)
+        
+        FormattedPC = f"0b{PC:032b}"
+        file.write(f"{FormattedPC} ")
+        for reg in RegisterValues.keys():
+            RegValue = f"0b{RegisterValues[reg]:032b}"
+            file.write(f"{RegValue} ")
+        file.write("\n")
+    
+    FormattedPC = f"0b{PC:032b}"
+    file.write(f"{FormattedPC} ")
+    for reg in RegisterValues.keys():
+        RegValue = f"0b{RegisterValues[reg]:032b}"
+        file.write(f"{RegValue} ")
+    file.write("\n")
+    
+    for addr, value in Memory.items():
+        if 0x00000100 <=  addr <= 0x0000017F or  0x00010000 <= addr <= 0x0001007C:
+            if 0x00010000 <= addr <= 0x0001007C:    
+                FormattedAdd =f"0x{addr:08X}"
+                FormattedValue =f"0b{value:032b}"
+                file.write(f"{FormattedAdd}:{FormattedValue}\n")
+        else: 
+            Error("Outside the Memory")
 
