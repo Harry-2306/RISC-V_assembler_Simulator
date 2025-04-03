@@ -192,6 +192,70 @@ def Process(element, Instruction, PC):
         return PC + 4
 
 
+    elif Instruction == "STypeInstructions":
+        ImmRaw = element[0:7] + element[20:25]
+        if ImmRaw[0] == '0': 
+            ImmValue = int(ImmRaw,2)
+        else: 
+            ImmRaw = ImmRaw.replace("0", "-")
+            ImmRaw = ImmRaw.replace("1", "0")
+            ImmRaw = ImmRaw.replace("-", "1")
+            ImmValue = - (int(ImmRaw,2) + 1)
+        Rs1Value = element[12:17]
+        Rs2Value = element[7:12]
+        
+        Rs1Register = Binary(Rs1Value)
+        Rs2Register = Binary(Rs2Value)
+        
+        MemoryAddress = UnSigned(RegisterValues[Rs1Register] + ImmValue)
+        Memory[MemoryAddress] = RegisterValues[Rs2Register]
+        return PC + 4
+    
+    elif Instruction == "BTypeInstructions":
+        ImmRaw = element[0] + element[24] + element[1:7] + element[20:24] + "0"
+        if ImmRaw[0] == '0': 
+            ImmValue = int(ImmRaw,2)
+        else: 
+            ImmRaw = ImmRaw.replace("0", "-")
+            ImmRaw = ImmRaw.replace("1", "0")
+            ImmRaw = ImmRaw.replace("-", "1")
+            ImmValue = - (int(ImmRaw,2) + 1)
+        Rs1Value = element[12:17]
+        Rs2Value = element[7:12]
+        funct3 = element[17:20]
+        
+        Rs1Register = Binary(Rs1Value)
+        Rs2Register = Binary(Rs2Value)
+        
+        Rs1StoredValue = RegisterValues[Rs1Register]
+        Rs2StoredValue = RegisterValues[Rs2Register]
+        
+        if funct3 == "000": 
+            if Rs1StoredValue == Rs2StoredValue:
+                return UnSigned(PC + ImmValue)
+        elif funct3 == "001": 
+            if Rs1StoredValue != Rs2StoredValue:
+                return UnSigned(PC + ImmValue)
+        return PC + 4
+    
+    elif Instruction == "JTypeInstructions":
+        ImmRaw = element[0] + element[12:20] + element[11] + element[1:11] + "0"
+        if ImmRaw[0] == '0': 
+            ImmValue = int(ImmRaw,2)
+        else: 
+            ImmRaw = ImmRaw.replace("0", "-")
+            ImmRaw = ImmRaw.replace("1", "0")
+            ImmRaw = ImmRaw.replace("-", "1")
+            ImmValue = - (int(ImmRaw,2) + 1)
+        RdValue = element[20:25]
+        
+        RdRegister = Binary(RdValue)
+        if RdRegister != "x0":
+            RegisterValues[RdRegister] = UnSigned(PC + 4)
+        return UnSigned(PC + ImmValue)
+
+    return PC + 4
+
 
 
 def Error(Message):
@@ -201,5 +265,17 @@ OriginalInstructionsList = []
 with open(input_path, "r") as file:
     for line in file:
         OriginalInstructionsList.append(line.strip())  
+
+def Binary(BinaryString):
+    RegisterNumber = 0
+    for bit in BinaryString:
+        RegisterNumber = RegisterNumber* 2 + int(bit) 
+    return f"x{RegisterNumber}"
+
+
+def UnSigned(value):
+    if value < 0:
+        value = value +  4294967296 
+    return value % 4294967296  
 
 
