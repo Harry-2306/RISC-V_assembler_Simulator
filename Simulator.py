@@ -103,7 +103,93 @@ def UnSigned(value):
 
 
 def Process(element, Instruction, PC):
+    global RegisterValues, Memory
 
+    if Instruction == "RTypeInstructions":
+        OperationUsed = ""
+        funct7 = element[0:7]
+        Rs2Value = element[7:12]
+        Rs1Value = element[12:17]
+        funct3 = element[17:20]
+        RdValue = element[20:25]
+        
+        Rs1Register = Binary(Rs1Value)
+        Rs2Register = Binary(Rs2Value)
+        RdRegister = Binary(RdValue)
+        
+        Rs1StoredValue = RegisterValues[Rs1Register]
+        Rs2StoredValue = RegisterValues[Rs2Register]
+        
+        for key, Values in RTypeInstructions.items():
+            if Values["funct7"] == funct7 and Values["funct3"] == funct3: 
+                OperationUsed = key 
+                break
+        
+        if OperationUsed == "add":
+            RdStoredValue = UnSigned(Rs1StoredValue+Rs2StoredValue)
+        elif OperationUsed == "sub":
+            RdStoredValue = UnSigned(Rs1StoredValue-Rs2StoredValue)
+        elif OperationUsed == "slt":
+            if Rs1StoredValue < Rs2StoredValue: 
+                RdStoredValue =1
+            else: 
+                RdStoredValue = 0
+        elif OperationUsed == "srl":
+            RdStoredValue = UnSigned(Rs1StoredValue//(2**Rs2StoredValue))
+        elif OperationUsed == "or":
+            RdStoredValue = UnSigned(Rs1StoredValue|Rs2StoredValue)
+        elif OperationUsed == "and":
+            RdStoredValue = UnSigned(Rs1StoredValue &Rs2StoredValue)
+        else:
+            return PC + 4
+        
+        if RdRegister != "x0":
+            RegisterValues[RdRegister]= RdStoredValue
+        return PC+4
+    
+    elif Instruction == "ITypeInstructions":
+        OperationUsed = ""
+        ImmRaw = element[0:12]
+        if ImmRaw[0] =='0': 
+            ImmValue =int(ImmRaw,2)
+        else: 
+            ImmRaw = ImmRaw.replace("0", "-")
+            ImmRaw = ImmRaw.replace("1", "0")
+            ImmRaw = ImmRaw.replace("-", "1")
+            ImmValue = -(int(ImmRaw,2) + 1)
+        Rs1Value = element[12:17]
+        funct3 = element[17:20]
+        RdValue = element[20:25]
+        opcode = element[-7:] 
+    
+        for key, Values in ITypeInstructions.items():
+            if Values["funct3"] == funct3 and Values["opcode"] == opcode:
+                OperationUsed = key
+                break
+    
+        Rs1Register = Binary(Rs1Value)
+        Rs1StoredValue = RegisterValues[Rs1Register]
+    
+        if OperationUsed == "addi":
+            RdStoredValue = UnSigned(Rs1StoredValue + ImmValue)
+        elif OperationUsed == "lw":
+            MemoryAddress = UnSigned(Rs1StoredValue + ImmValue)
+            if MemoryAddress in Memory:
+                RdStoredValue = Memory[MemoryAddress] 
+            else:
+                RdStoredValue = 0  
+        elif OperationUsed == "jalr":
+            RdStoredValue = UnSigned(PC + 4)
+            target = UnSigned(  Rs1StoredValue + ImmValue)
+            RdRegister = Binary(RdValue)
+            if RdRegister != "x0":
+                RegisterValues[RdRegister] = RdStoredValue
+            return target  
+    
+        RdRegister = Binary(RdValue)
+        if RdRegister != "x0":
+            RegisterValues[RdRegister] = RdStoredValue
+        return PC + 4
 
 
 
