@@ -301,6 +301,7 @@ with open(input_path, "r") as file:
 with open(output_path, "w") as file:
     while OriginalInstructionsList[PC//4] != "00000000000000000000000001100011":
         if (PC%4 != 0):
+            file.close()
             Error("PC is not a multiple")
         element = OriginalInstructionsList[PC//4]
         Opcode = element[-7:]  
@@ -308,6 +309,7 @@ with open(output_path, "w") as file:
         ObtainedInstruction = Test(Opcode, funct3)
         
         if ObtainedInstruction == "Error":
+            file.close()
             Error(f"Unknown instruction at PC = {PC + 4}\n")
             break
         
@@ -334,5 +336,6 @@ with open(output_path, "w") as file:
                 FormattedValue =f"0b{value:032b}"
                 file.write(f"{FormattedAdd}:{FormattedValue}\n")
         else: 
+            file.close()
             Error("Outside the Memory")
 
